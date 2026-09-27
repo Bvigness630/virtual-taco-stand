@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
-import { Component, Input, signal } from '@angular/core';
-import { Order } from '../order/order.component';
+import { Component, EventEmitter, Input, Output, signal } from '@angular/core';
+import { Order, Taco } from '../order/order.component';
 
 @Component({
   selector: 'app-order-summary',
@@ -8,25 +8,36 @@ import { Order } from '../order/order.component';
   imports: [CommonModule],
   template: `
     <h1 class="w4-sr-only">Order Summary</h1>
+
     @if (order.tacos.length > 0) {
       <ul class="w4-summary-list">
         @for (taco of order.tacos; track $index) {
           <li>
             <div class="w4-item-heading">
-              <strong>{{ taco.quantity }}x {{ taco.name }}</strong>
+              <strong>Item {{ $index + 1 }}: {{ taco.name }}</strong>
             </div>
+
             <div class="w4-detail-list">
-              <p>Price per taco: <span>{{ taco.price | currency:'USD':'symbol':'1.2-2' }}</span></p>
+              <p>Quantity: <span>{{ taco.quantity ?? 1 }}</span></p>
+              <p>Unit price: <span>{{ taco.price | currency:'USD':'symbol':'1.2-2' }}</span></p>
+              <p>Line subtotal: <span>{{ (taco.price * (taco.quantity ?? 1)) | currency:'USD':'symbol':'1.2-2' }}</span></p>
+
               @if (taco.noOnions) {
                 <p>No onions</p>
               }
+
               @if (taco.noCilantro) {
                 <p>No cilantro</p>
               }
+
+              <button type="button" (click)="removeTaco(taco)">
+                Remove Taco
+              </button>
             </div>
           </li>
         }
       </ul>
+
       <div class="w4-summary-total">
         <span>Total:</span>
         <strong>{{ getTotal() | currency:'USD':'symbol':'1.2-2' }}</strong>
@@ -50,7 +61,16 @@ export class OrderSummaryComponent {
     return this.orderState();
   }
 
+  @Output() removeTacoEvent = new EventEmitter<Taco>();
+
+  removeTaco(taco: Taco) {
+    this.removeTacoEvent.emit(taco);
+  }
+
   getTotal() {
-    return this.order.tacos.reduce((acc, taco) => acc + (taco.price * (taco.quantity ?? 1)), 0);
+    return this.order.tacos.reduce(
+      (acc, taco) => acc + (taco.price * (taco.quantity ?? 1)),
+      0
+    );
   }
 }

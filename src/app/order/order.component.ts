@@ -44,7 +44,7 @@ import { OrderSummaryComponent } from '../order-summary/order-summary.component'
               <label for="tacoType">Taco Type</label>
               <select name="tacoType" id="tacoType" [(ngModel)]="selectedTacoId">
                 @for (taco of tacos; track taco.id) {
-                  <option [value]="taco.id">{{ taco.name }} — {{ taco.price | currency }}</option>
+                  <option [value]="taco.id">{{ taco.name }} â€” {{ taco.price | currency }}</option>
                 }
               </select>
             </div>
@@ -83,7 +83,10 @@ import { OrderSummaryComponent } from '../order-summary/order-summary.component'
               <p>Items and totals update as you build.</p>
             </div>
           </div>
-          <app-order-summary [order]="order" />
+          <app-order-summary
+            [order]="order"
+            (removeTacoEvent)="removeTaco($event)"
+          />
         </div>
       </div>
     </section>
@@ -141,6 +144,15 @@ export class OrderComponent {
     } else {
       console.error('Taco not found in the list of available tacos.', this.selectedTacoId);
     }
+  }
+
+  removeTaco(taco: Taco) {
+    this.order = {
+      ...this.order,
+      tacos: this.order.tacos.filter(item => item !== taco)
+    };
+
+    this.orderUpdated.emit(this.order);
   }
 
   resetForm() {
