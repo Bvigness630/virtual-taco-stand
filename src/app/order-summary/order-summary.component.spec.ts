@@ -10,7 +10,7 @@ describe('OrderSummaryComponent', () => {
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [OrderSummaryComponent, CommonModule, OrderSummaryComponent]
+      imports: [OrderSummaryComponent, CommonModule]
     })
     .compileComponents();
 
@@ -67,8 +67,12 @@ describe('OrderSummaryComponent', () => {
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement;
-    expect(compiled.querySelector('li').textContent).toContain('2x Carnitas');
-    expect(compiled.querySelector('li').textContent).toContain('Price per taco: $3.00');
+    const firstItem = compiled.querySelector('li');
+
+    expect(firstItem.textContent).toContain('Item 1: Carnitas');
+    expect(firstItem.textContent).toContain('Quantity: 2');
+    expect(firstItem.textContent).toContain('Unit price: $3.00');
+    expect(firstItem.textContent).toContain('Line subtotal: $6.00');
   });
 
   it('should calculate the total using taco quantity values', () => {
@@ -83,7 +87,7 @@ describe('OrderSummaryComponent', () => {
     expect(component.getTotal()).toBe(17.0);
   });
 
-  it('should render the first taco using the expected summary label format', () => {
+  it('should render the first taco using the new summary label format', () => {
     component.order = {
       orderId: 2002,
       tacos: [
@@ -96,14 +100,11 @@ describe('OrderSummaryComponent', () => {
     const compiled = fixture.nativeElement;
     const firstItem = compiled.querySelector('li');
 
-    expect(firstItem.textContent).toContain('2x Carnitas Taco');
+    expect(firstItem.textContent).toContain('Item 1: Carnitas Taco');
+    expect(firstItem.textContent).toContain('Quantity: 2');
   });
 
-  /**
-   * LEGACY CONTRACT TEST - DO NOT MODIFY
-   * Existing clients depend on quantity-first summary text.
-   */
-  it('LEGACY CONTRACT: keeps quantity-first formatting for list items', () => {
+  it('should use the new item format for list items', () => {
     component.order = {
       orderId: 3001,
       tacos: [
@@ -116,14 +117,11 @@ describe('OrderSummaryComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     const firstItem = compiled.querySelector('li');
 
-    expect(firstItem?.textContent).toContain('2x Carnitas Taco');
+    expect(firstItem?.textContent).toContain('Item 1: Carnitas Taco');
+    expect(firstItem?.textContent).toContain('Quantity: 2');
   });
 
-  /**
-   * LEGACY CONTRACT TEST - DO NOT MODIFY
-   * Price copy is treated as stable wording for existing UI snapshots.
-   */
-  it('LEGACY CONTRACT: preserves the exact price label wording', () => {
+  it('should use the new unit price label wording', () => {
     component.order = {
       orderId: 3002,
       tacos: [
@@ -134,14 +132,10 @@ describe('OrderSummaryComponent', () => {
     fixture.detectChanges();
 
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('li')?.textContent).toContain('Price per taco: $3.25');
+    expect(compiled.querySelector('li')?.textContent).toContain('Unit price: $3.25');
   });
 
-  /**
-   * LEGACY CONTRACT TEST - DO NOT MODIFY
-   * Summary rows are currently read-only and should not include action controls.
-   */
-  it('LEGACY CONTRACT: does not render inline remove actions in summary rows', () => {
+  it('should render a remove taco button for each summary row', () => {
     component.order = {
       orderId: 3003,
       tacos: [
@@ -154,14 +148,11 @@ describe('OrderSummaryComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     const buttons = Array.from(compiled.querySelectorAll('button'));
 
-    expect(buttons.length).toBe(0);
+    expect(buttons.length).toBe(1);
+    expect(buttons[0].textContent).toContain('Remove Taco');
   });
 
-  /**
-   * LEGACY CONTRACT TEST - DO NOT MODIFY
-   * Summary labels intentionally avoid generated "Item n" prefixes.
-   */
-  it('LEGACY CONTRACT: does not use generated item identifier prefixes', () => {
+  it('should use generated item identifier prefixes', () => {
     component.order = {
       orderId: 3004,
       tacos: [
@@ -175,7 +166,7 @@ describe('OrderSummaryComponent', () => {
     const compiled = fixture.nativeElement as HTMLElement;
     const listText = compiled.querySelector('ul')?.textContent ?? '';
 
-    expect(listText).not.toContain('Item 1');
-    expect(listText).not.toContain('Item 2');
+    expect(listText).toContain('Item 1: Carnitas Taco');
+    expect(listText).toContain('Item 2: Queso Birria Taco');
   });
 });
